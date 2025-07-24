@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agentic AI in Architecture Quiz</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #1e1e1e;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    h1 {
+      color: red;
+    }
+    .hidden {
+      display: none;
+    }
+    .btn {
+      background-color: red;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      cursor: pointer;
+      margin: 10px;
+      font-size: 1em;
+    }
+    .question {
+      margin: 20px 0;
+      max-width: 700px;
+    }
+    .question p {
+      font-weight: bold;
+    }
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .option {
+      background-color: #333;
+      padding: 10px;
+      border: 1px solid white;
+      cursor: pointer;
+    }
+    .option:hover {
+      background-color: red;
+    }
+    .timer {
+      font-size: 1.2em;
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <h1>Agentic AI in Architecture Quiz</h1>
+
+  <div id="intro">
+    <label for="name">Enter your name:</label>
+    <input type="text" id="name" required />
+    <button class="btn" onclick="startQuiz()">Start Quiz</button>
+  </div>
+
+  <div id="quiz" class="hidden">
+    <div class="timer" id="timer">Time Left: 3:00</div>
+    <div id="questions"></div>
+    <button class="btn" onclick="submitQuiz()">Submit</button>
+  </div>
+
+  <div id="result" class="hidden"></div>
+
+  <script>
+    const questions = [
+      {
+        text: "What is a key feature of agentic AI that distinguishes it from traditional automation?",
+        options: [
+          "It can generate 3D models",
+          "It follows fixed rules",
+          "It makes context-aware decisions",
+          "It runs on cloud only"
+        ],
+        answer: 2
+      },
+      {
+        text: "How can agentic AI assist in architectural concept design?",
+        options: [
+          "By manually drawing concepts",
+          "By autonomously proposing variations based on site data",
+          "By scanning building materials",
+          "By only creating floor plans"
+        ],
+        answer: 1
+      },
+      {
+        text: "In architectural workflows, agentic AI is MOST useful during:",
+        options: [
+          "Photorealistic rendering",
+          "Structural validation",
+          "Regulation drafting",
+          "Iterative design explorations"
+        ],
+        answer: 3
+      },
+      {
+        text: "Which of the following best describes an agentic AI loop?",
+        options: [
+          "Prompt → Generate → Done",
+          "Sense → Think → Act → Learn",
+          "Plan → Scan → Store",
+          "Input → Code → Output"
+        ],
+        answer: 1
+      }
+    ];
+
+    let timer;
+    let timeLeft = 180;
+    let score = 0;
+
+    function startQuiz() {
+      const name = document.getElementById("name").value.trim();
+      if (!name) return alert("Please enter your name");
+      document.getElementById("intro").classList.add("hidden");
+      document.getElementById("quiz").classList.remove("hidden");
+      startTimer();
+      renderQuestions();
+    }
+
+    function startTimer() {
+      timer = setInterval(() => {
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          submitQuiz();
+        } else {
+          timeLeft--;
+          const mins = Math.floor(timeLeft / 60);
+          const secs = timeLeft % 60;
+          document.getElementById("timer").textContent = `Time Left: ${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+      }, 1000);
+    }
+
+    function renderQuestions() {
+      const container = document.getElementById("questions");
+      questions.forEach((q, idx) => {
+        const div = document.createElement("div");
+        div.className = "question";
+        div.innerHTML = `<p>${idx + 1}. ${q.text}</p>`;
+        const optContainer = document.createElement("div");
+        optContainer.className = "options";
+
+        q.options.forEach((opt, i) => {
+          const optBtn = document.createElement("div");
+          optBtn.className = "option";
+          optBtn.textContent = opt;
+          optBtn.onclick = () => selectAnswer(idx, i, optBtn);
+          optContainer.appendChild(optBtn);
+        });
+
+        div.appendChild(optContainer);
+        container.appendChild(div);
+      });
+    }
+
+    const userAnswers = Array(questions.length).fill(null);
+
+    function selectAnswer(qIndex, optIndex, element) {
+      userAnswers[qIndex] = optIndex;
+      const options = element.parentNode.querySelectorAll('.option');
+      options.forEach(opt => opt.style.backgroundColor = '#333');
+      element.style.backgroundColor = 'red';
+    }
+
+    function submitQuiz() {
+      clearInterval(timer);
+      const name = document.getElementById("name").value;
+      score = userAnswers.reduce((total, ans, idx) => ans === questions[idx].answer ? total + 1 : total, 0);
+
+      fetch("https://your-n8n-url.com/webhook/agentic-ai-response", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, score })
+      });
+
+      document.getElementById("quiz").classList.add("hidden");
+      document.getElementById("result").classList.remove("hidden");
+      document.getElementById("result").innerHTML = `<h2>Thanks, ${name}!</h2><p>Your Score: ${score}/${questions.length}</p>`;
+    }
+  </script>
+</body>
+</html>
